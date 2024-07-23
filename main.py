@@ -6,6 +6,7 @@ import time
 import urllib.parse
 import schedule
 from Interface import Interface
+import atexit
 
 logging.basicConfig(filename='sync.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
@@ -89,9 +90,17 @@ local_dict = load_local_dict(local_dict_path)
 if local_dict is None:
     local_dict = load_local_disk_data(local_folder_path)
 cloud_files = load_cloud_disk_data(Interface)
-sync(local_dict, cloud_files, local_folder_path)
 
-schedule.every(interval).minutes.do(lambda: sync(local_dict, cloud_files, local_folder_path))
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+
+@atexit.register
+def last_sync() -> None:
+    sync(local_dict, cloud_files, local_folder_path)
+
+
+if __name__ == "__main__":
+    sync(local_dict, cloud_files, local_folder_path)
+
+    schedule.every(interval).minutes.do(lambda: sync(local_dict, cloud_files, local_folder_path))
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

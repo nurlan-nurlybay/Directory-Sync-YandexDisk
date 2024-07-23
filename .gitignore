@@ -163,3 +163,4 @@ cython_debug/
 
 .ini
 config.ini
+/local_dict.json
